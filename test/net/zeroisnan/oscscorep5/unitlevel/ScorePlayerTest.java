@@ -28,15 +28,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import net.zeroisnan.oscscorep5.ScorePlayer;
-import net.zeroisnan.saf.base.SCAudio;
+import net.zeroisnan.oscscorep5.OscScoreP5;
 
 public class ScorePlayerTest extends ScoreBaseTest {
-  SCAudio sca;
+  OscScoreP5 sca;
   OscScoreboard scb;
 
   @Before
   public void prepareOSCTest() {
-    sca = new SCAudio(testapplet);
+    sca = new OscScoreP5(testapplet);
     // create the scoreboard
     scb = new OscScoreboard();
     sca.addListener(scb);

@@ -26,7 +26,6 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import net.zeroisnan.saf.base.SCAudio;
 import oscP5.OscEventListener;
 import oscP5.OscMessage;
 import oscP5.OscStatus;
@@ -37,16 +36,17 @@ import processing.core.PApplet;
  * class can then be played back using {@link ScorePlayer} .
  *
  * <p>
- * ScoreRecorder requires an OscP5 instance to exist in your sketch. In this
- * example the SAF specific OscP5 implementation {@link SCAudio} is used. An
- * instance of ScoreRecorder is registered as an event listener for OscP5.
+ * Once created, an instance of ScoreRecorder shall be registered as an event
+ * listener on an OscP5 instance. Note this is not required when the recorder is
+ * used through the {@link OscScoreP5} class.
  *
  * <pre>
- * // setup communication with SuperCollider
- * SCAudio sca = new SCAudio(this);
- *
- * // register ScoreRecorder as an event listener to log incoming OSC messages
- * sca.addListener(new ScoreRecorder(this, &quot;mydump.xml&quot;));
+ * // an OscP5 object for which we want to record incoming messages
+ * OscP5 sca = new OscP5(this, 12000);
+ * // the recorder
+ * ScoreRecorder rec = new ScoreRecorder(this, &quot;mydump.xml&quot;)
+ * // register the recorder as an event listener to log incoming OSC messages
+ * sca.addListener(rec);
  * </pre>
  *
  * <p>

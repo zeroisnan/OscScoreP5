@@ -26,7 +26,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.stream.StreamSource;
 
-import net.zeroisnan.saf.base.SCAudio;
 import processing.core.PApplet;
 
 /**
@@ -36,7 +35,8 @@ import processing.core.PApplet;
  * Incoming OSC messages can be recorded into XML files (the score) using the
  * {@link ScoreRecorder} class. An instance of this class will then be able to
  * replay the content recorded by reading the XML file and generating OSC
- * messages locally (via loopback in the {@link SCAudio} class).
+ * messages locally (for example by using the loopback functionality in the
+ * {@link OscScoreP5} class).
  *
  * <p>
  * A typical use case is a Processing sketch controlled via OSC messages from
@@ -50,9 +50,10 @@ import processing.core.PApplet;
  * Usage example:
  *
  * <pre>
- * // instantiate SCAudio, as ScorePlayer relies on its loopback link with the
- * // sketch
- * SCAudio sca = new SCAudio(this);
+ * // instantiate an OscP5 object implementing he {@link OscLoopback} interface,
+ * // like {@link OscScoreP5} as ScorePlayer needs a loopback() method to replay
+ * // the messages
+ * OscScoreP5 sca = new OscScoreP5(this, localport);
  *
  * // create an ScorePlayer instance to replay the content of a XML score
  * ScorePlayer oscplay = new ScorePlayer(this, &quot;mydump.xml&quot;, sca);
@@ -76,7 +77,7 @@ public class ScorePlayer {
   /** hold a list of events currently scheduled */
   protected List<ScoreEvent> events;
   /** used to send OSC messages */
-  protected SCAudio sca;
+  protected OscLoopback sca;
   /** debug attribute */
   protected boolean debug;
 
@@ -85,9 +86,9 @@ public class ScorePlayer {
    *
    * @param p reference to the parent applet
    * @param xmlpath path to XML OSC score file
-   * @param sca {@link SCAudio} instance used to send OSC messages
+   * @param sca {@link OscLoopback} instance used to send OSC messages
    */
-  public ScorePlayer(PApplet p, String xmlpath, SCAudio sca) {
+  public ScorePlayer(PApplet p, String xmlpath, OscLoopback sca) {
     this.pp = p;
     // store the path to the XML score
     this.xmlscore = Paths.get(xmlpath).toAbsolutePath().toString();
