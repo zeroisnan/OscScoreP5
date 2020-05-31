@@ -22,6 +22,7 @@ import processing.core.PApplet;
  * An OscP5 object with loopback capabilities.
  */
 public class OscScoreP5 extends OscP5 implements OscLoopback {
+  /** package version string */
   public final static String VERSION = "##library.prettyVersion##";
 
   /** local address */
@@ -53,4 +54,11 @@ public class OscScoreP5 extends OscP5 implements OscLoopback {
     super.send(msg, this.loopback);
   }
 
+  /**
+   * @return the version of the library.
+   */
+  @Override
+  public String version() {
+    return String.format("%s_OscP5%s", VERSION, super.version());
+  }
 }
