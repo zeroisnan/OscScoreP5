@@ -36,9 +36,13 @@ import processing.core.PApplet;
  * class can then be played back using {@link ScorePlayer} .
  *
  * <p>
- * Once created, an instance of ScoreRecorder shall be registered as an event
- * listener on an OscP5 instance. Note this is not required when the recorder is
- * used through the {@link OscScoreP5} class.
+ * The recommended usage model is through the rec() function of the
+ * {@link OscScoreP5} class. If a finer level control is required, a
+ * ScoreRecorder object can be created directly and registered as an event
+ * listener on an OscP5 instance.
+ *
+ * <p>
+ * Low level usage example:
  *
  * <pre>
  * // an OscP5 object for which we want to record incoming messages

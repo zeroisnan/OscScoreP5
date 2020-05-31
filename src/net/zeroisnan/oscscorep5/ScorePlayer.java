@@ -32,22 +32,13 @@ import processing.core.PApplet;
  * Replay the content of a XML score generated with {@link ScoreRecorder}.
  *
  * <p>
- * Incoming OSC messages can be recorded into XML files (the score) using the
- * {@link ScoreRecorder} class. An instance of this class will then be able to
- * replay the content recorded by reading the XML file and generating OSC
- * messages locally (for example by using the loopback functionality in the
- * {@link OscScoreP5} class).
+ * The recommended usage model is through the play() function of the
+ * {@link OscScoreP5} class. If a finer level control is required, a ScorePlayer
+ * object can be created directly and shall be connected to an OscP5 object
+ * implementing the {@link OscLoopback} interface, like {@link OscScoreP5}.
  *
  * <p>
- * A typical use case is a Processing sketch controlled via OSC messages from
- * external agents like SuperCollider, MAX, TouchOsc, etc. By recording the
- * incoming message stream, it is possible to reproduce the sketch evolution
- * without the external agent that generated the messages. This can be
- * particularly convenient when doing non real time rendering of the sketch, as
- * the same control messages will be received in the same frame.
- *
- * <p>
- * Usage example:
+ * Low level usage example:
  *
  * <pre>
  * // instantiate an OscP5 object implementing he {@link OscLoopback} interface,
@@ -58,8 +49,6 @@ import processing.core.PApplet;
  * // create an ScorePlayer instance to replay the content of a XML score
  * ScorePlayer oscplay = new ScorePlayer(this, &quot;mydump.xml&quot;, sca);
  * </pre>
- *
- *
  */
 public class ScorePlayer {
   /** reference to the parent PApplet */
@@ -82,19 +71,21 @@ public class ScorePlayer {
   protected boolean debug;
 
   /**
-   * constructor
+   * constructor (complete)
    *
    * @param p reference to the parent applet
    * @param xmlpath path to XML OSC score file
    * @param sca {@link OscLoopback} instance used to send OSC messages
+   * @param debug enable/disable debug while drawing
    */
-  public ScorePlayer(PApplet p, String xmlpath, OscLoopback sca) {
+  public ScorePlayer(PApplet p, String xmlpath, OscLoopback sca,
+      boolean debug) {
     this.pp = p;
     // store the path to the XML score
     this.xmlscore = Paths.get(xmlpath).toAbsolutePath().toString();
     this.events = new ArrayList<ScoreEvent>(3);
     this.sca = sca;
-    this.setDebug(false);
+    this.setDebug(debug);
 
     // rewind (initialize in this case) the player
     this.rewind();
@@ -103,6 +94,17 @@ public class ScorePlayer {
     // frame is reached (and to draw debugging information when enabled)
     pp.registerMethod("pre", this);
     pp.registerMethod("draw", this);
+  }
+
+  /**
+   * constructor (debug off)
+   *
+   * @param p reference to the parent applet
+   * @param xmlpath path to XML OSC score file
+   * @param sca {@link OscLoopback} instance used to send OSC messages
+   */
+  public ScorePlayer(PApplet p, String xmlpath, OscLoopback sca) {
+    this(p, xmlpath, sca, false);
   }
 
   /**
