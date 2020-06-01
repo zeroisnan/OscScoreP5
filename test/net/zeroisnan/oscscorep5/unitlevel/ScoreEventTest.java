@@ -1,14 +1,6 @@
 /**
- * ##library.name##
- * ##library.sentence##
- * ##library.url##
- *
- * Copyright ##copyright## ##author##
+ * Copyright (C) 2014-present Nico L'Insalata aka zeroisnan
  * SPDX-License-Identifier: LGPL-3.0-or-later
- *
- * @author      ##author##
- * @version     ##library.prettyVersion## (##library.version##)
- *              Last modified: ##date##
  */
 
 package net.zeroisnan.oscscorep5.unitlevel;

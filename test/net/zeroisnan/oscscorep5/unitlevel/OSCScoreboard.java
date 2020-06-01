@@ -1,14 +1,6 @@
 /**
- * ##library.name##
- * ##library.sentence##
- * ##library.url##
- *
- * Copyright ##copyright## ##author##
+ * Copyright (C) 2014-present Nico L'Insalata aka zeroisnan
  * SPDX-License-Identifier: LGPL-3.0-or-later
- *
- * @author      ##author##
- * @version     ##library.prettyVersion## (##library.version##)
- *              Last modified: ##date##
  */
 
 package net.zeroisnan.oscscorep5.unitlevel;
@@ -34,9 +26,8 @@ class OscScoreboard implements OscEventListener {
 
   public static void compare(OscPacket exp, OscPacket act) {
     // check both expected and actual are of the same kind
-    assertTrue(String.format("Expected %s Actual %s",
-        exp.getClass().toString(), act.getClass().toString()), act.getClass()
-        .equals(exp.getClass()));
+    assertTrue(String.format("Expected %s Actual %s", exp.getClass().toString(),
+        act.getClass().toString()), act.getClass().equals(exp.getClass()));
 
     if (exp instanceof OscBundle) {
       // comparing a bundle
@@ -112,9 +103,8 @@ class OscScoreboard implements OscEventListener {
       OscMessage received = null;
       try {
         received = this.rcvd.poll(5L, TimeUnit.SECONDS);
-        assertNotNull(
-            String.format("Timeout while waiting for message %s",
-                expected.toString()), received);
+        assertNotNull(String.format("Timeout while waiting for message %s",
+            expected.toString()), received);
       } catch (InterruptedException e) {
         fail("Test waiting thread was interrupted! Bailing out!");
       }
