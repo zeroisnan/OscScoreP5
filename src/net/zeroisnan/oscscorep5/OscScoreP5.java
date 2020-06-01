@@ -65,6 +65,16 @@ public class OscScoreP5 extends OscP5 implements OscLoopback {
   }
 
   /**
+   * constructor (default local port 12000)
+   *
+   * @param p reference to the parent sketch applet
+   * @param debug enable/disable debug
+   */
+  public OscScoreP5(PApplet p, boolean debug) {
+    this(p, 12000, debug);
+  }
+
+  /**
    * constructor (default local port 12000, no debug)
    *
    * @param p reference to the parent sketch applet
