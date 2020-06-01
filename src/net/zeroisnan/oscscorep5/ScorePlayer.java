@@ -55,7 +55,6 @@ public class ScorePlayer {
   protected PApplet pp;
   /** local frame count */
   protected int framecount;
-
   /** path to the XML score */
   protected String xmlscore;
   /** XML event reader */
@@ -119,6 +118,13 @@ public class ScorePlayer {
    */
   public void setDebug(boolean debug) {
     this.debug = debug;
+  }
+
+  /**
+   * @return path to Osc score
+   */
+  public String getScorePath() {
+    return this.xmlscore;
   }
 
   /**

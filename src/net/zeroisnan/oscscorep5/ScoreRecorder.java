@@ -125,6 +125,13 @@ public class ScoreRecorder implements OscEventListener {
   }
 
   /**
+   * @return path to Osc score
+   */
+  public String getScorePath() {
+    return this.xmlfilepath;
+  }
+
+  /**
    * pre-draw method that creates the XML output stream. This method is
    * automatically registered as a callback in the Processing sketch and should
    * not be invoked directly.
