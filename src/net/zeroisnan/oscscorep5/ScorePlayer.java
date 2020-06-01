@@ -165,13 +165,20 @@ public class ScorePlayer {
   public void pre() {
     this.framecount++;
 
-    // is the event list empty ?
+    // we want the event queue to underrun as little as possible
+    // worst case scenario is one event per frame, so we try to
+    // have always frameRate events in queue
+    int eventsToFetch = (int) this.pp.frameRate - this.events.size();
+    // we don't know what might happen to frameRate, so do constraint the number
+    // of events to fetch just in case
+    eventsToFetch = PApplet.constrain(eventsToFetch, 0,
+        (int) this.pp.frameRate);
+    this.fetch(eventsToFetch);
+
     if (this.events.isEmpty()) {
-      // fetch a bunch of events to keep us busy
-      if (this.fetch(10) <= 0) {
-        // if there is nothing to fetch, there is not much to do here
-        return;
-      }
+      // when we land here these is nothing left to fetch and nothing left to
+      // schedule
+      return;
     }
 
     // if we get here there is something in the event list: at what frame should
