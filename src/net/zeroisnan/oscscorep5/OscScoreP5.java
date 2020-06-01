@@ -126,6 +126,20 @@ public class OscScoreP5 extends OscP5 implements OscLoopback {
   }
 
   /**
+   * rewind the OSC score
+   */
+  public void rewind() {
+    if (this.player != null) {
+      System.out.println(String.format("OscScoreP5: rewinding the score at %s",
+          this.player.getScorePath()));
+      this.player.rewind();
+    } else {
+      System.out.println(
+          "OscScoreP5: rewind requested, but not score loaded for playback...");
+    }
+  }
+
+  /**
    * Record incoming OSC packets
    *
    * @param xmlpath path to XML OSC score file
