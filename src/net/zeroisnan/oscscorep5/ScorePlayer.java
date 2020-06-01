@@ -14,8 +14,8 @@
 package net.zeroisnan.oscscorep5;
 
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -55,15 +55,17 @@ public class ScorePlayer {
   protected PApplet pp;
   /** local frame count */
   protected int framecount;
+
   /** path to the XML score */
   protected String xmlscore;
+
   /** XML event reader */
   protected XMLEventReader xer;
   /** used for unmarshalling */
   protected Unmarshaller unmarshaller;
 
   /** hold a list of events currently scheduled */
-  protected List<ScoreEvent> events;
+  protected Queue<ScoreEvent> events;
   /** used to send OSC messages */
   protected OscLoopback sca;
   /** debug attribute */
@@ -82,7 +84,7 @@ public class ScorePlayer {
     this.pp = p;
     // store the path to the XML score
     this.xmlscore = Paths.get(xmlpath).toAbsolutePath().toString();
-    this.events = new ArrayList<ScoreEvent>(3);
+    this.events = new LinkedList<ScoreEvent>();
     this.sca = sca;
     this.setDebug(debug);
 
@@ -128,26 +130,30 @@ public class ScorePlayer {
   }
 
   /**
-   * parse the XML score looking for the next event and update the relevant
-   * fields in the class (next framecount and next OSC message to send) which
-   * can then be accessed with getNextFrame() and getNextMsg()
+   * parse the score looking for the next event and push that in the event queue
+   *
+   * @param num number of events to (attempt to) fetch
+   * @return number of events fetched
    */
-  protected boolean next() {
-    boolean retvalue = false;
+  protected int fetch(int num) {
+    int retvalue = 0;
 
-    try {
-      if (xer.peek().isStartElement()) {
-        JAXBElement<ScoreDataPacket> jb = this.unmarshaller.unmarshal(xer,
-            ScoreDataPacket.class);
-        this.events.add(jb.getValue().toScoreEvent());
-        retvalue = true;
-      } else {
-        retvalue = false;
+    for (int cnt = 0; cnt < num; cnt++) {
+      try {
+        if (xer.peek().isStartElement()) {
+          JAXBElement<ScoreDataPacket> jb = this.unmarshaller.unmarshal(xer,
+              ScoreDataPacket.class);
+          this.events.add(jb.getValue().toScoreEvent());
+          retvalue++;
+        } else {
+          // nothing left to fetch
+          break;
+        }
+      } catch (JAXBException | XMLStreamException e) {
+        // TODO Auto-generated catch block - issue error
+        e.printStackTrace();
+        retvalue = 0;
       }
-    } catch (JAXBException | XMLStreamException e) {
-      // TODO Auto-generated catch block - issue error
-      e.printStackTrace();
-      retvalue = false;
     }
 
     return retvalue;
@@ -161,19 +167,22 @@ public class ScorePlayer {
 
     // is the event list empty ?
     if (this.events.isEmpty()) {
-      // try to fetch something
-      if (!this.next()) {
+      // fetch a bunch of events to keep us busy
+      if (this.fetch(10) <= 0) {
         // if there is nothing to fetch, there is not much to do here
         return;
       }
     }
 
     // if we get here there is something in the event list: at what frame should
-    // we schedule the next event?
-    int execFrame = this.events.get(0).getFrame();
+    // we schedule the next event? look at the head of the event queue
+    int execFrame = this.events.peek().getFrame();
     if (execFrame == this.framecount) {
-      // hey, it's your moment!
-      sca.loopback(this.events.remove(0).getPkt());
+      // hey, it's your moment:
+      // - pop the element from the queue
+      // - get the packet in it
+      // - send it over loopback
+      sca.loopback(this.events.remove().getPkt());
     }
   }
 
@@ -218,11 +227,13 @@ public class ScorePlayer {
       String timeInfo = String.format("elapsed time: %.2fs",
           pp.millis() / 1000.0);
 
-      String frameInfo = String.format("current frame: %d - frame rate: %.1f",
+      String frameInfo = String.format(
+          "current frame: %d (%d) - frame rate: %.1f", this.framecount,
           pp.frameCount, pp.frameRate);
 
       String eventInfo = String.format("Next scheduled event: %s\n",
-          (this.events.size() > 0) ? this.events.get(0).getFrame() : -1);
+          (this.events.size() > 0) ? this.events.peek().getFrame()
+              : "event queue empty");
 
       pp.textSize(12);
       pp.fill(255, 255, 0);
@@ -233,7 +244,8 @@ public class ScorePlayer {
   }
 
   /**
-   * @return string representation to ease drawing of realtime debug information
+   * @return string representation to ease drawing of real time debug
+   *         information
    */
   @Override
   public String toString() {
@@ -242,7 +254,7 @@ public class ScorePlayer {
     str += String.format("Debug mode: %b ", this.isDebug());
     str += String.format("Current frame: %d ", this.pp.frameCount);
     str += (this.events.isEmpty()) ? "Scheduled event: NO EVENT"
-        : String.format("Scheduled event: %s", this.events.get(0).toString());
+        : String.format("Scheduled event: %s", this.events.peek().toString());
     return str;
   }
 }
