@@ -13,6 +13,9 @@
 
 package net.zeroisnan.oscscorep5;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -24,7 +27,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.stream.StreamSource;
 
 import processing.core.PApplet;
 
@@ -57,10 +59,12 @@ public class ScorePlayer {
   protected int framecount;
 
   /** path to the XML score */
-  protected String xmlscore;
-
+  protected String xmlfilepath;
+  /** XML file stream object (used by the reader) */
+  protected FileInputStream xmlfilestream;
   /** XML event reader */
   protected XMLEventReader xer;
+
   /** used for unmarshalling */
   protected Unmarshaller unmarshaller;
 
@@ -82,8 +86,15 @@ public class ScorePlayer {
   public ScorePlayer(PApplet p, String xmlpath, OscLoopback sca,
       boolean debug) {
     this.pp = p;
-    // store the path to the XML score
-    this.xmlscore = Paths.get(xmlpath).toAbsolutePath().toString();
+    this.xmlfilepath = Paths.get(xmlpath).toAbsolutePath().toString();
+    try {
+      this.xmlfilestream = new FileInputStream(this.xmlfilepath);
+    } catch (FileNotFoundException e) {
+      System.err
+          .println(String.format("ERROR: unable to open OSC score at %s - %s",
+              this.xmlfilepath, e.getMessage()));
+      return;
+    }
     this.events = new LinkedList<ScoreEvent>();
     this.sca = sca;
     this.setDebug(debug);
@@ -126,7 +137,7 @@ public class ScorePlayer {
    * @return path to Osc score
    */
   public String getScorePath() {
-    return this.xmlscore;
+    return this.xmlfilepath;
   }
 
   /**
@@ -150,9 +161,7 @@ public class ScorePlayer {
           break;
         }
       } catch (JAXBException | XMLStreamException e) {
-        // TODO Auto-generated catch block - issue error
-        e.printStackTrace();
-        retvalue = 0;
+        ScoreUtils.handleException(e, "Invalid OSC score content");
       }
     }
 
@@ -201,27 +210,22 @@ public class ScorePlayer {
     this.events.clear();
 
     try {
-      // create the stream reader
+      // rewind the filestream
+      this.xmlfilestream.getChannel().position(0);
+      // create the XML event reader
       XMLInputFactory xif = XMLInputFactory.newInstance();
-      StreamSource xml = new StreamSource(this.xmlscore);
-      this.xer = xif.createXMLEventReader(xml);
-      System.out.println(
-          String.format("ScorePlayer: reading XML at %s", this.xmlscore));
-
-      // advance the stream and position the pointer right before the first
-      // packet
+      this.xer = xif.createXMLEventReader(this.xmlfilestream);
+      // initialize the unmarshaller
+      JAXBContext jc = JAXBContext.newInstance(ScoreDataPacket.class);
+      this.unmarshaller = jc.createUnmarshaller();
+      // advance the reader, pointer right before the first packet
       do {
         xer.nextEvent();
       } while (!xer.peek().asStartElement().getName().getLocalPart()
           .equals("oscpacket"));
-
-      // initialize the unmarshaller
-      JAXBContext jc = JAXBContext.newInstance(ScoreDataPacket.class);
-      this.unmarshaller = jc.createUnmarshaller();
-
-    } catch (XMLStreamException | JAXBException e) {
-      e.printStackTrace();
-      System.err.println("ERROR: Invalid XML input: " + e.getMessage());
+    } catch (XMLStreamException | JAXBException | IOException
+        | ClassCastException e) {
+      ScoreUtils.handleException(e, "Invalid OSC score content");
     }
   }
 
@@ -264,4 +268,5 @@ public class ScorePlayer {
         : String.format("Scheduled event: %s", this.events.peek().toString());
     return str;
   }
+
 }

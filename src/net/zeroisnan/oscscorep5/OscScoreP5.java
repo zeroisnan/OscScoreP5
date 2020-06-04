@@ -134,8 +134,8 @@ public class OscScoreP5 extends OscP5 implements OscLoopback {
           this.player.getScorePath()));
       this.player.rewind();
     } else {
-      System.out.println(
-          "OscScoreP5: rewind requested, but not score loaded for playback...");
+      System.err.println(
+          "OscScoreP5: rewind requested, but no score loaded for playback...");
     }
   }
 

@@ -13,6 +13,7 @@
 
 package net.zeroisnan.oscscorep5;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -99,10 +100,12 @@ public class ScoreRecorder implements OscEventListener {
   /** next event (OscPacket) to stream to XML */
   protected ScoreDataPacket pkt2write;
 
-  /** XML writer */
-  protected XMLStreamWriter xtw;
   /** path to the output XML file */
   protected String xmlfilepath;
+  /** XML file stream object (used by the writer) */
+  protected FileOutputStream xmlfilestream;
+  /** XML writer */
+  protected XMLStreamWriter xtw;
   /** used for marshalling */
   protected Marshaller marshaller;
 
@@ -116,6 +119,14 @@ public class ScoreRecorder implements OscEventListener {
     this.parent = p;
     this.pre_done = false;
     this.xmlfilepath = Paths.get(xmlfilepath).toAbsolutePath().toString();
+    try {
+      this.xmlfilestream = new FileOutputStream(this.xmlfilepath);
+    } catch (FileNotFoundException e) {
+      System.err.println(
+          String.format("ERROR: unable to open OSC score for write at %s - %s",
+              this.xmlfilepath, e.getMessage()));
+      return;
+    }
     this.pkt2write = null;
 
     // register pre method which will initialize the XML file
@@ -148,19 +159,20 @@ public class ScoreRecorder implements OscEventListener {
         marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
         // create the XML stream writer
-        xtw = xof.createXMLStreamWriter(new FileOutputStream(this.xmlfilepath),
-            "utf-8");
+        xtw = xof.createXMLStreamWriter(this.xmlfilestream, "utf-8");
         System.out.println(String.format("ScoreRecorder: dumping XML at %s",
             this.xmlfilepath));
         // write initial XML content
         xtw.writeStartDocument("utf-8", "1.0");
         xtw.writeStartElement("oscscore");
         xtw.writeAttribute("generator", parent.getClass().getSimpleName());
-      } catch (Exception e) {
-        e.printStackTrace();
+      } catch (JAXBException | XMLStreamException e) {
+        System.err
+            .println(String.format("ERROR: while creating OSC score at %s - %s",
+                this.xmlfilepath, e.getMessage()));
       }
-
     }
+
     // do this only once
     pre_done = true;
   }
@@ -180,7 +192,9 @@ public class ScoreRecorder implements OscEventListener {
       xtw.flush();
       xtw.close();
     } catch (XMLStreamException e) {
-      e.printStackTrace();
+      System.err
+          .println(String.format("ERROR: while closing OSC score at %s - %s",
+              this.xmlfilepath, e.getMessage()));
     }
   }
 
@@ -233,8 +247,9 @@ public class ScoreRecorder implements OscEventListener {
           arg.setValue(Double.toString(msg.get(i).doubleValue()));
           break;
         default:
-          throw new IllegalStateException(String.format(
+          System.err.println(String.format(
               "OSC message argument %s is invalid or not supported", c));
+          break;
       }
       args.add(arg);
     }
@@ -259,8 +274,8 @@ public class ScoreRecorder implements OscEventListener {
     try {
       marshaller.marshal(je, this.xtw);
     } catch (JAXBException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
+      System.err.println("ERROR: While writing XML event: " + e.getMessage());
     } finally {
       this.pkt2write = null;
     }

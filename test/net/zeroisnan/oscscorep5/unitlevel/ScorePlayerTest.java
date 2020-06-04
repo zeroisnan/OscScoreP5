@@ -133,7 +133,6 @@ public class ScorePlayerTest extends ScoreBaseTest {
     // path to a XML file which is actually empty
     String xmlempty = Paths.get("test/data/testScorePlayer_empty.xml")
         .toAbsolutePath().toString();
-
     // hijack stderr
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
@@ -141,7 +140,8 @@ public class ScorePlayerTest extends ScoreBaseTest {
     @SuppressWarnings("unused")
     ScorePlayer oscplay = new ScorePlayer(testapplet, xmlempty, sca);
     // check the error message
-    assertTrue(errContent.toString().contains("ERROR: Invalid XML input"));
+    assertTrue(
+        errContent.toString().contains("ERROR: Invalid OSC score content"));
     // release stderr
     System.setErr(null);
   }
@@ -159,12 +159,17 @@ public class ScorePlayerTest extends ScoreBaseTest {
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
     // new a ScorePlayer object pointing to a truncated XML
-    @SuppressWarnings("unused")
     ScorePlayer oscplay = new ScorePlayer(testapplet, xmltrunc, sca);
     // check the error message
-    assertTrue(errContent.toString().contains("ERROR: Invalid XML input"));
-    // release stderr
-    System.setErr(null);
+    try {
+      oscplay.pre();
+    } catch (Exception e) {
+      assertTrue(
+          errContent.toString().contains("ERROR: Invalid OSC score content"));
+    } finally {
+      // release stderr
+      System.setErr(null);
+    }
   }
 
   /**
@@ -175,18 +180,24 @@ public class ScorePlayerTest extends ScoreBaseTest {
     // path to a XML file with truncated content
     String xmlbadargs = Paths.get("test/data/testScorePlayer_invalidargs.xml")
         .toAbsolutePath().toString();
-
     // hijack stderr
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
     // new a ScorePlayer object pointing to a XML with a bad argument
     // specifier
-    @SuppressWarnings("unused")
     ScorePlayer oscplay = new ScorePlayer(testapplet, xmlbadargs, sca);
+    // invalid argument is on second message, so expect the first one
+    scb.oscExpect(msgs.get(0));
     // check the error message
-    assertTrue(errContent.toString().contains("ERROR: Invalid XML input"));
-    // release stderr
-    System.setErr(null);
+    try {
+      oscplay.pre();
+    } catch (Exception e) {
+      assertTrue(
+          errContent.toString().contains("ERROR: Invalid OSC score content"));
+    } finally {
+      // release stderr
+      System.setErr(null);
+    }
   }
 
   /**
