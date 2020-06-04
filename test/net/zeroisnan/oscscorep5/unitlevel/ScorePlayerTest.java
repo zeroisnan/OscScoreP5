@@ -131,7 +131,7 @@ public class ScorePlayerTest extends ScoreBaseTest {
   @Test
   public void invalidXMLInputEmpty() {
     // path to a XML file which is actually empty
-    String xmlempty = Paths.get("test/data/testOscScoreReader_empty.xml")
+    String xmlempty = Paths.get("test/data/testScorePlayer_empty.xml")
         .toAbsolutePath().toString();
 
     // hijack stderr
@@ -152,7 +152,7 @@ public class ScorePlayerTest extends ScoreBaseTest {
   @Test
   public void invalidXMLInputTruncated() {
     // path to a XML file with truncated content
-    String xmltrunc = Paths.get("test/data/testOscScoreReader_truncated.xml")
+    String xmltrunc = Paths.get("test/data/testScorePlayer_truncated.xml")
         .toAbsolutePath().toString();
 
     // hijack stderr
@@ -173,9 +173,8 @@ public class ScorePlayerTest extends ScoreBaseTest {
   @Test
   public void invalidXMLInputBadArgs() {
     // path to a XML file with truncated content
-    String xmlbadargs = Paths
-        .get("test/data/testOscScoreReader_invalidargs.xml").toAbsolutePath()
-        .toString();
+    String xmlbadargs = Paths.get("test/data/testScorePlayer_invalidargs.xml")
+        .toAbsolutePath().toString();
 
     // hijack stderr
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
