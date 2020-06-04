@@ -60,27 +60,37 @@ public class ScorePlayerTest extends ScoreBaseTest {
 
     // 6 is the highest framecount in the reference file,
     // so step forward the player 6 times to ensure the whole
-    // XML is parsed and replayed
+    // XML is parsed and played
     for (int i = 0; i < 7; i++) {
       // fetch it from the XML score
       oscplay.pre();
+      String currstr = oscplay.toString();
       switch (i) {
-        case 2:
+        case 0:
           assertEquals(
-              "ScorePlayer: Debug mode: false Current frame: 0 Scheduled event: Frame: 3 - Packet: null:0 | /addr666 fis",
-              oscplay.toString());
+              "ScorePlayer: Debug mode: false Current frame: 0 Scheduled event: Frame: 1 - Packet: null:0 | /aaa/bbb/xyz/3 fsdi",
+              currstr);
           break;
-        case 3:
-        case 6:
+        case 1:
           assertEquals(
-              "ScorePlayer: Debug mode: false Current frame: 0 Scheduled event: NO EVENT",
-              oscplay.toString());
+              "ScorePlayer: Debug mode: false Current frame: 0 Scheduled event: Frame: 2 - Packet: null:0 | /zzz/yyy/aaa ii",
+              currstr);
+          break;
+        case 2:
+        case 3:
+          assertEquals(
+              "ScorePlayer: Debug mode: false Current frame: 0 Scheduled event: Frame: 4 - Packet: null:0 | /addr666 fis",
+              currstr);
           break;
         case 4:
         case 5:
-          assertThat(oscplay.toString(), containsString(
+          assertThat(currstr, containsString(
               "ScorePlayer: Debug mode: false Current frame: 0 Scheduled event: Frame: 6 - Packet: oscP5.OscBundle@"));
-
+          break;
+        case 6:
+          assertEquals(
+              "ScorePlayer: Debug mode: false Current frame: 0 Scheduled event: NO EVENT",
+              currstr);
           break;
       }
     }
@@ -95,8 +105,9 @@ public class ScorePlayerTest extends ScoreBaseTest {
     // rewind the player
     oscplay.rewind();
 
-    // only read one event, the first one, which happens at frame 0
+    // only read one event, the first one, which happens at frame 1
     scb.oscExpect(msgs.get(0));
+    oscplay.pre();
     oscplay.pre();
     scb.balanceScoreboard();
 
